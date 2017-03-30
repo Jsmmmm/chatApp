@@ -11,10 +11,9 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 								
-			//open main window
+			
 			Parent root = FXMLLoader.load(getClass().getResource("/application/view/MainView.fxml"));
-			Scene scene = new Scene(root);
-			//scene.getStylesheets().add(getClass().getResource("/chat/view/application.css").toExternalForm());
+			Scene scene = new Scene(root);			
 			primaryStage.setTitle("Simple Chat App");
 			primaryStage.setScene(scene);
 			primaryStage.show();
