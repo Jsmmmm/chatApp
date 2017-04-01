@@ -67,11 +67,15 @@ public class MainController{
     		circle.setFill(Color.GREEN);
     		connectButton.setDisable(true);   		
     		disconnectButton.setDisable(false);
+    		username.setDisable(true);
+    		password.setDisable(true);
     		
     	}else{
     		circle.setFill(Color.RED);
     		disconnectButton.setDisable(true);
     		connectButton.setDisable(false);
+    		username.setDisable(false);
+    		password.setDisable(false);
     	}
     	
     }
@@ -79,8 +83,9 @@ public class MainController{
     @FXML
     private void connect(ActionEvent e){
     	client = new Client(hostAddress.getText(), Integer.parseInt(hostPort.getText()), username.getText(), this);
-    	if(!client.start()) return; //     <- test if we can start the client
-    	
+    	if(!client.start()){
+    		return; //     <- test if we can start the client
+    	}   	
     	//connected = true;
     	setConnectionStatusUI(true);
     }
@@ -110,7 +115,7 @@ public class MainController{
     private void sendMessage(){
     	String msg = messageField.getText();
     
-    	if(client != null){
+    	if((client != null) && (!msg.isEmpty())){
     		client.sendMessage(msg);
     		messageField.setText("");
     	}

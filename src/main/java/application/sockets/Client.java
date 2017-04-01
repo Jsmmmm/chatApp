@@ -13,7 +13,6 @@ public class Client {
 	private ObjectOutputStream output;
 	Socket socket;
 	MainController main;
-
 	private String serverIp, username;
 	private int port;
 	
@@ -33,8 +32,8 @@ public class Client {
 		catch(Exception e){			
 		}
 		
-		String msg = "Connection accepted "+socket.getInetAddress()+":"+socket.getPort();
-		display(msg);
+		String msg = "Connection accepted: "+socket.getInetAddress()+":"+socket.getPort();
+		display(msg);//pitäsköhä tää lukee clientin sijasta myös muille käyttäjille eli broadcastata?
 		try{
 			input  = new ObjectInputStream(socket.getInputStream());
 			output = new ObjectOutputStream(socket.getOutputStream());
@@ -92,11 +91,10 @@ public class Client {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		
-		
+		}			
 	}
 	
+	//inner class: client side thread that listens server
 	class ListenFromServer extends Thread{
 
 		public void run(){

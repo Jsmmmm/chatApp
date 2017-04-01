@@ -18,8 +18,8 @@
             <TextField fx:id="hostAddress" prefHeight="25.0" prefWidth="124.0" />
             <Label prefHeight="30.0" prefWidth="63.0" text="Host Port:" />
             <TextField fx:id="hostPort" prefHeight="25.0" prefWidth="90.0" />
-            <Button fx:id="connect" mnemonicParsing="false" onAction="#connect" prefHeight="25.0" prefWidth="75.0" text="Connect" />
-            <Button fx:id="disconnect" mnemonicParsing="false" onAction="#disconnectFromServer" prefHeight="25.0" prefWidth="75.0" text="Disconnect" />
+            <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connect" prefHeight="25.0" prefWidth="75.0" text="Connect" />
+            <Button fx:id="disconnectButton" mnemonicParsing="false" onAction="#disconnectFromServer" prefHeight="25.0" prefWidth="75.0" text="Disconnect" />
             <Circle fx:id="circle" fill="#ed0505" radius="7.0" stroke="BLACK" />
          </children>
       </HBox>
@@ -29,8 +29,8 @@
             <TextField fx:id="username" prefHeight="25.0" prefWidth="124.0" />
             <Label prefHeight="30.0" prefWidth="63.0" text="Password:" />
             <TextField fx:id="password" prefHeight="25.0" prefWidth="90.0" />
-            <Button fx:id="login" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Login" />
-            <Button fx:id="signup" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="SignUp" />
+            <Button fx:id="loginButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Login" />
+            <Button fx:id="signupButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="SignUp" />
          </children>
       </HBox>
       <Separator prefHeight="30.0" prefWidth="610.0">
@@ -47,8 +47,8 @@
       <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="610.0" spacing="10.0">
          <children>
             <Label prefHeight="30.0" prefWidth="67.0" text="Message:" />
-            <TextField fx:id="message" prefHeight="25.0" prefWidth="405.0" />
-            <Button fx:id="send" mnemonicParsing="false" onAction="#sendMessage" text="Send Message" />
+            <TextField fx:id="messageField" prefHeight="25.0" prefWidth="405.0" />
+            <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendMessage" text="Send Message" />
          </children>
       </HBox>
    </children>
