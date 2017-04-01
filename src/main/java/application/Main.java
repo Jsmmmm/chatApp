@@ -14,7 +14,7 @@ public class Main extends Application {
 			
 			Parent root = FXMLLoader.load(getClass().getResource("/application/view/MainView.fxml"));
 			Scene scene = new Scene(root);			
-			primaryStage.setTitle("Simple Chat App");
+			primaryStage.setTitle("Jope Chat 0.1");
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			

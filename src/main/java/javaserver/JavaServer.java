@@ -1,86 +1,119 @@
 package javaserver;
 
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
-public class JavaServer extends Thread{
-
-	private ServerSocket serverSocket;
-	private Socket clientSocket;
-	//private boolean keepGoingServer=true;
+public class JavaServer{
 	
+	protected static int connectionId;
+	private ArrayList<ClientThread> al;	
+	private SimpleDateFormat time;
+	private int port;	
+	private boolean serverOn;
 	
 	
 	public JavaServer(int port){
+		this.port = port;
+		time = new SimpleDateFormat("HH:mm:ss");
+		al = new ArrayList<ClientThread>();		
+	}
+	
+	
+	public void start(){
+		
+		serverOn = true;
+		
 		try{
-			serverSocket = new ServerSocket(port);
-			clientSocket = null;			
-		}catch(IOException e){
+			ServerSocket serverSocket = new ServerSocket(port);
+						
+			while(serverOn){
+				System.out.println("Server is waiting for clients on port: "+port);
+				Socket socket = serverSocket.accept();	//accept connection
+				
+				if(!serverOn){
+					break;
+				}
+				
+				ClientThread clientThread = new ClientThread(socket, this);	//make a thread of it
+				al.add(clientThread);	//save it in the arraylist
+				clientThread.start();
+				
+			}
+			
+			try{
+				serverSocket.close();
+				for(int i = 0; i<al.size(); i++){
+					ClientThread cT = al.get(i);
+					try{
+						cT.input.close();
+						cT.output.close();
+						cT.socket.close();
+					}catch(IOException e){
+						e.printStackTrace();
+					}
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
-	public void run(){
+	/*
+	 * display an event(not message) to the server console
+	 */
+	protected void display(String message){
 		
-		while(true){
-			
-			if(serverSocket == null){
+		String messageTime = time.format(new Date())+" "+message;
+		System.out.println(messageTime);
+	}
+	
+	
+	//broadcast message to all clients
+	protected synchronized void broadcast(String msg){
+		String messageTime = time.format(new Date());
+		String message = messageTime+" "+msg+"\n";
+		
+		display("Server console:"+message);//print to server console
+		
+		//loop in reverse order in case we would have to remove a client because it has disconnected
+		for(int i = al.size();--i >= 0;){
+			ClientThread cT = al.get(i);
+			if(!cT.writeMsg(message)){
+				al.remove(i);
+				display("Disconnected client removed from list");
+			}
+		}		
+	}
+	
+	//for client who logoff using the logout message
+	synchronized void remove(int id){
+		for(ClientThread cT : al){
+			if(cT.id == id){
+				al.remove(cT);
 				return;
 			}
-			
-			try{
-				clientSocket = serverSocket.accept();
-					
-				InputStreamReader input = new InputStreamReader(clientSocket.getInputStream());
-				BufferedReader bufferedReader = new BufferedReader(input);				
-				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-								
-				
-				while(true){
-					welcomeMessage(out);
-					String line = bufferedReader.readLine();
-					
-					if(line.length()>=0){
-						
-						if(line.equals("quit")){
-							break;
-						}
-						System.out.println("printtaa server konsoliin: "+line);
-						out.println(line);
-					}
-				}
-				out.println("Closing connection");
-				input.close();
-				bufferedReader.close();
-				out.close();
-				clientSocket.close();
-			//	System.exit(0);
-				
-				}catch(IOException io){
-					io.printStackTrace();
-				}
-			}				
 		}
-	
-	public static void main(String[] args){
-		JavaServer server = new JavaServer(25000);
-		server.start();
 	}
 	
-	private void welcomeMessage(PrintWriter out){
-		if(out != null)
-		out.println("Server: Welcome");
+	protected void stop(){
+		serverOn = false;
+		
 	}
 	
-	/*private void closeConnection(){
-		input.close();
-		bufferedReader.close();
-		clientSocket.close();
-		System.exit(0);
-	}*/
+	public static void main(String[]args){
+		
+	int portNumber = 25000;
+	
+	JavaServer javaServer = new JavaServer(portNumber);
+	javaServer.start();
+
+	}
 }

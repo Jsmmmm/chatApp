@@ -8,23 +8,25 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller.MainController">
    <children>
-      <HBox prefHeight="40.0" prefWidth="200.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
          <children>
-            <Label prefHeight="30.0" prefWidth="84.0" text="Host Address:" />
-            <TextField fx:id="hostAddress" prefHeight="25.0" prefWidth="149.0" />
+            <Label prefHeight="30.0" prefWidth="85.0" text="Host Address:" />
+            <TextField fx:id="hostAddress" prefHeight="25.0" prefWidth="124.0" />
             <Label prefHeight="30.0" prefWidth="63.0" text="Host Port:" />
             <TextField fx:id="hostPort" prefHeight="25.0" prefWidth="90.0" />
             <Button fx:id="connect" mnemonicParsing="false" onAction="#connect" prefHeight="25.0" prefWidth="75.0" text="Connect" />
             <Button fx:id="disconnect" mnemonicParsing="false" onAction="#disconnectFromServer" prefHeight="25.0" prefWidth="75.0" text="Disconnect" />
+            <Circle fx:id="circle" fill="#ed0505" radius="7.0" stroke="BLACK" />
          </children>
       </HBox>
-      <HBox prefHeight="40.0" prefWidth="200.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
          <children>
             <Label prefHeight="30.0" prefWidth="85.0" text="Username:" />
-            <TextField fx:id="username" />
+            <TextField fx:id="username" prefHeight="25.0" prefWidth="124.0" />
             <Label prefHeight="30.0" prefWidth="63.0" text="Password:" />
             <TextField fx:id="password" prefHeight="25.0" prefWidth="90.0" />
             <Button fx:id="login" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Login" />
@@ -36,13 +38,13 @@
             <Insets />
          </VBox.margin>
       </Separator>
-      <HBox prefHeight="288.0" prefWidth="610.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="288.0" prefWidth="610.0" spacing="10.0">
          <children>
             <TextArea fx:id="textArea" prefHeight="288.0" prefWidth="610.0" />
          </children>
       </HBox>
       <Separator prefHeight="30.0" prefWidth="610.0" />
-      <HBox prefHeight="45.0" prefWidth="610.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="610.0" spacing="10.0">
          <children>
             <Label prefHeight="30.0" prefWidth="67.0" text="Message:" />
             <TextField fx:id="message" prefHeight="25.0" prefWidth="405.0" />

@@ -1,16 +1,21 @@
 package application.controller;
 
-import application.sockets.ClientSocket;
+
+import application.sockets.Client;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
-public class MainController implements Runnable{
+public class MainController{
 
 	
-
+	@FXML
+	private Circle circle;
+	
     @FXML
     private TextField hostAddress;
 
@@ -18,7 +23,7 @@ public class MainController implements Runnable{
     private TextField hostPort;
 
     @FXML
-    private Button connect;
+    private Button connectButton;
 
     @FXML
     private TextField username;
@@ -27,69 +32,66 @@ public class MainController implements Runnable{
     private TextField password;
 
     @FXML
-    private Button login;
+    private Button loginButton;
 
     @FXML
-    private Button signup;
+    private Button signupButton;
 
     @FXML
     private TextArea textArea;
 
     @FXML
-    private TextField message;
+    private TextField messageField;
 
     @FXML
-    private Button send;
+    private Button sendButton;
     
     @FXML
-    private Button disconnect;
+    private Button disconnectButton;
     
-    ClientSocket clientSocket = null;
+    Client client;
     
-    private volatile String receivedMessage;
+   // private boolean connected;
     
-    
-    
-    public void run(){
-    	textArea.appendText(receivedMessage+"\n");
+    @FXML
+    private void initialize(){
+    	setConnectionStatusUI(false);
     }
     
-    
-    
-    private synchronized void setReceivedMessage(String message){
-    	this.receivedMessage = message;
-    }
-    
-    
-    public void updateReceivedMessage(String message){
-    	
-    	setReceivedMessage(message);
-    	run();
+    public void showMessage(String message){
+    	textArea.appendText(message+"\n");   
     }
    
+    public void setConnectionStatusUI(Boolean connected){
+    	if(connected){
+    		circle.setFill(Color.GREEN);
+    		connectButton.setDisable(true);   		
+    		disconnectButton.setDisable(false);
+    		
+    	}else{
+    		circle.setFill(Color.RED);
+    		disconnectButton.setDisable(true);
+    		connectButton.setDisable(false);
+    	}
+    	
+    }
     
     @FXML
     private void connect(ActionEvent e){
+    	client = new Client(hostAddress.getText(), Integer.parseInt(hostPort.getText()), username.getText(), this);
+    	if(!client.start()) return; //     <- test if we can start the client
     	
-    	if(clientSocket == null){
-    		
-    		clientSocket = new ClientSocket();
-    		if(clientSocket != null){
-    			
-    			clientSocket.setMainController(this);
-    			   			
-    			clientSocket.connectToServer(hostAddress.getText(), Integer.parseInt(hostPort.getText()));
-    			clientSocket.start();    			
-    		}
-    	}
-    	//connect.setDisable(true);
-    	//send.setDisable(false);
+    	//connected = true;
+    	setConnectionStatusUI(true);
     }
     
     @FXML
     private void disconnectFromServer(ActionEvent e){
-    	clientSocket.disconnect();
-    	clientSocket = null;
+    	client.sendMessage("/quit");
+    	
+    	//connected = false;
+    	client.disconnect();
+    	setConnectionStatusUI(false);
     }
     
     @FXML
@@ -106,8 +108,12 @@ public class MainController implements Runnable{
     
     @FXML
     private void sendMessage(){
-    	clientSocket.sendMessage(message.getText());
-    	message.setText("");    	
+    	String msg = messageField.getText();
+    
+    	if(client != null){
+    		client.sendMessage(msg);
+    		messageField.setText("");
+    	}
     }
     
     
