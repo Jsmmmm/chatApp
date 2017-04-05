@@ -1,16 +1,21 @@
 package application.controller;
 
 
-import application.sockets.Client;
+import java.util.ArrayList;
+
+import application.client.Client;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class MainController{
+public class ClientGUIController{
 
 	
 	@FXML
@@ -49,9 +54,14 @@ public class MainController{
     @FXML
     private Button disconnectButton;
     
+    @FXML
+    private ListView<String> usersListView;
+    
     Client client;
     
-   // private boolean connected;
+    ArrayList<String> users;
+    
+    private boolean connected;
     
     @FXML
     private void initialize(){
@@ -61,14 +71,25 @@ public class MainController{
     public void showMessage(String message){
     	textArea.appendText(message+"\n");   
     }
+    
+    //rename
+    void connectionFailed(){
+    	circle.setFill(Color.RED);
+		disconnectButton.setDisable(true);
+		connectButton.setDisable(false);
+		username.setDisable(false);
+		password.setDisable(false);
+		connected = false;
+    }
    
-    public void setConnectionStatusUI(Boolean connected){
-    	if(connected){
+    public void setConnectionStatusUI(Boolean isConnected){
+    	if(isConnected){
     		circle.setFill(Color.GREEN);
     		connectButton.setDisable(true);   		
     		disconnectButton.setDisable(false);
     		username.setDisable(true);
     		password.setDisable(true);
+    		connected = true;
     		
     	}else{
     		circle.setFill(Color.RED);
@@ -76,27 +97,33 @@ public class MainController{
     		connectButton.setDisable(false);
     		username.setDisable(false);
     		password.setDisable(false);
+    		connected = false;
+    		usersListView.getItems().clear();
+    		
     	}
     	
     }
     
     @FXML
     private void connect(ActionEvent e){
+	
     	client = new Client(hostAddress.getText(), Integer.parseInt(hostPort.getText()), username.getText(), this);
     	if(!client.start()){
     		return; //     <- test if we can start the client
     	}   	
-    	//connected = true;
+    	connected = true;
     	setConnectionStatusUI(true);
     }
     
     @FXML
     private void disconnectFromServer(ActionEvent e){
-    	client.sendMessage("/quit");
-    	
-    	//connected = false;
-    	client.disconnect();
-    	setConnectionStatusUI(false);
+    	if(connected){
+    		client.sendMessage("/quit");
+        	
+        	//connected = false;
+        	//client.disconnect();
+        	setConnectionStatusUI(false);
+    	}  	
     }
     
     @FXML
@@ -110,15 +137,29 @@ public class MainController{
     	
     }
     
+   
+    public void updateListView(ArrayList<String> users){
+    	ObservableList<String> items = FXCollections.observableArrayList(users);
+    	if(users.isEmpty()){
+    		usersListView.getItems().clear();
+    	}else{
+    		usersListView.setItems(items);
+    	}
+    	
+    }
     
     @FXML
     private void sendMessage(){
-    	String msg = messageField.getText();
-    
-    	if((client != null) && (!msg.isEmpty())){
-    		client.sendMessage(msg);
-    		messageField.setText("");
+    	if(connected){
+    		String msg = messageField.getText();
+    		if((client != null) && (!msg.isEmpty())){
+        		client.sendMessage(msg);
+        		messageField.setText("");
+        	}
     	}
+    	
+    
+    	
     }
     
     

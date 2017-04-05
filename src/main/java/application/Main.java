@@ -13,7 +13,7 @@ public class Main extends Application {
 										
 			Parent root = FXMLLoader.load(getClass().getResource("/application/view/MainView.fxml"));
 			Scene scene = new Scene(root);			
-			primaryStage.setTitle("Jope Chat 0.1");
+			primaryStage.setTitle("ChatApp 0.1");
 			primaryStage.setScene(scene);
 			primaryStage.show();			
 			

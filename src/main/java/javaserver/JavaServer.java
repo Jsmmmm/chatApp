@@ -13,7 +13,7 @@ import java.util.Date;
 public class JavaServer{
 	
 	private static int connectionId;
-	private ArrayList<ClientThread> al;	
+	private ArrayList<ClientThread> clientThreadsList;	
 	private SimpleDateFormat time;
 	private int port;	
 	private boolean serverOn;
@@ -22,8 +22,31 @@ public class JavaServer{
 	public JavaServer(int port){
 		this.port = port;
 		time = new SimpleDateFormat("HH:mm:ss");
-		al = new ArrayList<ClientThread>();		
+		clientThreadsList = new ArrayList<ClientThread>();		
 	}
+	
+	public static void main(String[] args){
+		
+		int portNumber = 25000;
+		
+		switch(args.length) {
+		
+		case 1: try{
+					portNumber = Integer.parseInt(args[0]);
+				}catch(Exception e){
+					e.printStackTrace();
+					return;
+				}
+		case 0:
+			break;					
+		}
+
+		
+		JavaServer javaServer = new JavaServer(portNumber);
+		javaServer.start();
+
+	}
+	
 	
 	
 	public void start(){
@@ -34,23 +57,25 @@ public class JavaServer{
 			ServerSocket serverSocket = new ServerSocket(port);
 						
 			while(serverOn){
-				System.out.println("Server is waiting for clients on port: "+port);
+				display("Server is waiting for clients on port: "+port);
+				
 				Socket clientSocket = serverSocket.accept();	//accept connection
 				
 				if(!serverOn){
 					break;
 				}
 				
-				ClientThread clientThread = new ClientThread(clientSocket);	//make a thread of it
-				al.add(clientThread);	//save it in the arraylist
-				clientThread.start();			
-				
+				ClientThread clientThread = new ClientThread(clientSocket);	//make a thread of it, ClientThread is inner class
+				clientThreadsList.add(clientThread);	//save it in the arraylist
+				clientThread.start();
+				refreshUsersOnlineToClients(); 
 			}
 			
+			//was asked to stop
 			try{
 				serverSocket.close();
-				for(int i = 0; i<al.size(); i++){
-					ClientThread cT = al.get(i);
+				for(int i = 0; i < clientThreadsList.size(); i++){
+					ClientThread cT = clientThreadsList.get(i);
 					try{
 						cT.input.close();
 						cT.output.close();
@@ -63,7 +88,7 @@ public class JavaServer{
 				e.printStackTrace();
 			}
 			
-		}catch(Exception e){
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
@@ -83,25 +108,30 @@ public class JavaServer{
 		String messageTime = time.format(new Date());
 		String message = messageTime+" "+msg+"\n";
 		
-		display("Server console:"+message);//print to server console
+		//print to server console
+		System.out.println(message);
 		
 		//loop in reverse order in case we would have to remove a client because it has disconnected
-		for(int i = al.size();--i >= 0;){
-			ClientThread cT = al.get(i);
+		
+		for(int i = clientThreadsList.size(); --i >= 0;){			
+			ClientThread cT = clientThreadsList.get(i);
 			if(!cT.writeMsg(message)){
-				al.remove(i);				
+				clientThreadsList.remove(i);
+				display("Disconnected client "+cT.username + "removed from chat");
+				//refreshUsersOnlineToClients(); USERS GUI
 			}
 		}		
 	}
 	
 	//for client who logoff using the logout message
 	synchronized void remove(int id){
-		for(ClientThread cT : al){
-			if(cT.id == id){
-				al.remove(cT);
+		for(ClientThread clientThread : clientThreadsList){
+			if(clientThread.id == id){
+				clientThreadsList.remove(clientThread);
 				return;
 			}
 		}
+		
 	}
 	
 	protected void stop(){
@@ -109,14 +139,24 @@ public class JavaServer{
 		
 	}
 	
-	public static void main(String[] args){
-	
-	int portNumber = 25000;
+	//testi oo valmis poistamaan
+	private synchronized void refreshUsersOnlineToClients(){
 		
-	JavaServer javaServer = new JavaServer(portNumber);
-	javaServer.start();
+		//arraylist of usernames online
+		ArrayList<String> users = new ArrayList();
+		
+		
+		for(int k = clientThreadsList.size(); --k >= 0;){
+			users.add(clientThreadsList.get(k).username);			
+		}		
+		
 
+		for(int i = clientThreadsList.size(); --i >= 0;){
+			ClientThread cT = clientThreadsList.get(i);
+			cT.sendClientArrayListOfUsersOnline(users);											
+		}		
 	}
+	
 	
 	
 	//this thread will run for each client
@@ -131,51 +171,62 @@ public class JavaServer{
 		
 		String username;
 		
-		String message;
+		String chatMessage;
 		
 		String date;
 		
 		ClientThread(Socket socket){
-			id = connectionId++;
+			id = ++connectionId;
 			this.socket = socket;
 			
-			
+			//poista
+			System.out.println("Thread trying to create object input/outputs streams");
 			//creating both data stream
 			try{				
 				output = new ObjectOutputStream(socket.getOutputStream());
 				input = new ObjectInputStream(socket.getInputStream());
-				username = (String) input.readObject();				
+				username = (String) input.readObject();
+				display(username+" connected");
+				broadcast(username+" connected");
 			}catch(Exception e){
 				e.printStackTrace();
 				return;
-			}
-			
+			}			
 		}
 		
-		//will run forever until logout
+		//will run until logout
 		public void run(){
+			
 			boolean clientConnectionOn = true;
-			//broadcast(username+" connected");
+			
 			while(clientConnectionOn){
 				try{
-					message = (String) input.readObject();
+					chatMessage = (String) input.readObject();
 				}
-				catch(Exception e){
-					e.printStackTrace();
+				catch(IOException e){
+					display(username + "exception reading streams: "+e);
+					break;
 				}
-				if(message.equalsIgnoreCase("/quit")){ //user disconnects			
+				catch(ClassNotFoundException e){
+					//its (String), should work..
+					break;
+				}
+				
+				if(chatMessage.equalsIgnoreCase("/quit")){ //user disconnects			
 					display(username+" disconnected.");
 					broadcast(username+" disconnected");
 					clientConnectionOn = false;
 					
-					break;
-				}
-				
-				broadcast(username+": "+message);
+					
+				}else{
+					broadcast(username+": "+chatMessage);
+					
+				}				
 			}
 			
-			remove(id);
+			remove(id);	//remove disconnected clientThread by id from arraylist
 			close();
+			refreshUsersOnlineToClients();
 		}
 		
 		
@@ -196,9 +247,9 @@ public class JavaServer{
 		}
 		
 		
-		//write a string to client outputstream
+		//write a string to this client threads outputstream
 		protected boolean writeMsg(String msg){
-			//if client is still connected send the mesage to it
+			//if client is still connected send message to it
 			if(!socket.isConnected()){
 				close();
 				return false;
@@ -207,9 +258,23 @@ public class JavaServer{
 			try{
 				output.writeObject(msg);
 			}catch(IOException e){
-				//display("Error sending message to "+username);
+				display("Error sending message to "+username);
 			}
 			return true;
-		}	
+		}
+		
+		//testi, oo valmis poistamaan LAITA TÄÄ METODI LÄHETTÄMÄÄN ARRAY LÄSNÄOLIJOISTA KAIKILLE LÄSNÄOLIJOILLE
+		protected boolean sendClientArrayListOfUsersOnline(ArrayList<String> users){
+			if(!socket.isConnected()){
+				close();
+				return false;
+			}
+			try{
+				output.writeObject(users);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return true;
+		}
 	}
 }
