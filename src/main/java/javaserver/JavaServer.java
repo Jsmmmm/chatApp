@@ -186,7 +186,7 @@ public class JavaServer{
 				output = new ObjectOutputStream(socket.getOutputStream());
 				input = new ObjectInputStream(socket.getInputStream());
 				username = (String) input.readObject();
-				display(username+" connected");
+				//display(username+" connected");
 				broadcast(username+" connected");
 			}catch(Exception e){
 				e.printStackTrace();
@@ -213,7 +213,7 @@ public class JavaServer{
 				}
 				
 				if(chatMessage.equalsIgnoreCase("/quit")){ //user disconnects			
-					display(username+" disconnected.");
+					//display(username+" disconnected.");
 					broadcast(username+" disconnected");
 					clientConnectionOn = false;
 					
